@@ -121,9 +121,24 @@
             <!-- Items injected by JS -->
         </div>
         <div class="cart-footer">
+            <div class="deposit-selector">
+                <p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Modalidad de Pago:</p>
+                <label>
+                    <input type="radio" name="payment-mode" value="full" checked onclick="toggleDeposit(false)">
+                    <span>Pago Total (Saldado)</span>
+                </label>
+                <label style="margin-top: 0.8rem;">
+                    <input type="radio" name="payment-mode" value="deposit" onclick="toggleDeposit(true)">
+                    <span>Anticipo 50% (Garantía de Diseño)</span>
+                </label>
+            </div>
             <div class="total-row">
-                <span>Total:</span>
+                <span>Total Pedido:</span>
                 <span id="cart-total-price">$0.00 MXN</span>
+            </div>
+            <div id="cart-deposit-row" class="total-row deposit-row" style="display: none;">
+                <span>Pagar Hoy (50%):</span>
+                <span id="cart-deposit-amount">$0.00 MXN</span>
             </div>
             <div class="checkout-options">
                 <button class="btn-checkout btn-whatsapp-checkout" onclick="checkoutWhatsApp()">Finalizar por WhatsApp</button>

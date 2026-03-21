@@ -1,6 +1,7 @@
 
 // Cart state management
 let cart = JSON.parse(localStorage.getItem('bemylove_cart')) || [];
+let isDepositOnly = false; // New state for the 50% deposit option
 
 // Save to localStorage
 function saveCart() {
@@ -64,10 +65,17 @@ function closeCart() {
     document.getElementById('cart-sidebar').classList.remove('open');
 }
 
+function toggleDeposit(value) {
+    isDepositOnly = value;
+    renderCartItems(); // Re-render to show updated totals
+}
+
 // Render items in the sidebar
 function renderCartItems() {
     const container = document.getElementById('cart-items-container');
     const totalElement = document.getElementById('cart-total-price');
+    const depositRow = document.getElementById('cart-deposit-row');
+    const depositAmount = document.getElementById('cart-deposit-amount');
     
     if (!container) return;
 
@@ -77,6 +85,7 @@ function renderCartItems() {
     if (cart.length === 0) {
         container.innerHTML = '<p style="text-align: center; margin-top: 2rem; color: #666;">Tu carrito está vacío</p>';
         totalElement.innerText = '$0.00 MXN';
+        depositRow.style.display = 'none';
         return;
     }
 
@@ -103,6 +112,13 @@ function renderCartItems() {
     });
 
     totalElement.innerText = `$${total.toLocaleString()} MXN`;
+
+    if (isDepositOnly) {
+        depositRow.style.display = 'flex';
+        depositAmount.innerText = `$${(total * 0.5).toLocaleString()} MXN`;
+    } else {
+        depositRow.style.display = 'none';
+    }
 }
 
 // Finalize flows
@@ -117,7 +133,16 @@ function checkoutWhatsApp() {
         total += item.price * item.quantity;
     });
     
-    message += `\n*Total: $${total.toLocaleString()} MXN*\n\n¿Me podrían confirmar disponibilidad y envío?`;
+    message += `\n*Subtotal: $${total.toLocaleString()} MXN*`;
+
+    if (isDepositOnly) {
+        message += `\n*MODO DE PAGO: Anticipo del 50% ($${(total * 0.5).toLocaleString()} MXN)*`;
+        message += `\n(Liquidaré el resto al recibir/en la entrega)`;
+    } else {
+        message += `\n*MODO DE PAGO: Liquidación total*`;
+    }
+    
+    message += `\n\n¿Me podrían confirmar disponibilidad y envío?`;
     
     const encoded = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/5219996503963?text=${encoded}`;
@@ -126,8 +151,10 @@ function checkoutWhatsApp() {
 
 function checkoutOnline() {
     if (cart.length === 0) return;
-    alert("Redirigiendo a pasarela de pago segura (Stripe)... Esta función se activará en tu cuenta de producción.");
-    // Here you would typically send the cart to a backend or generate a Stripe Checkout session.
+    const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const amountToPay = isDepositOnly ? total * 0.5 : total;
+    
+    alert(`Redirigiendo a pasarela de pago segura por un monto de $${amountToPay.toLocaleString()} MXN (${isDepositOnly ? 'Anticipo 50%' : 'Total'})...`);
 }
 
 // Initialize
